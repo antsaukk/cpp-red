@@ -31,13 +31,6 @@ public:
       auto prev_it = prev(it);
       auto result2 = (it == reachable_stations.end() || abs(finish - *prev_it) <= abs(*it - finish)) ? abs(finish - *prev_it) : abs(finish - *it);
       return min(result, result2);
-
-
-      /*result = min(result,
-          abs(finish - *min_element(begin(reachable_stations), end(reachable_stations), //M
-              [finish](int lhs, int rhs) { return abs(lhs - finish) < abs(rhs - finish); }
-          ))
-      );*/
     }
     return result;
   }
