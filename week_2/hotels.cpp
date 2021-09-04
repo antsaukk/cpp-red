@@ -38,7 +38,7 @@ public:
 		}
 	}
 
-	void Book(long long int time, string hotel_name, int client_id, int room_count){
+	void Book(long long int time, const string& hotel_name, int client_id, int room_count){
 		//check if hotel already exist
 		int hotel_id_key = 0;
 		if (hotel_ids_.count(hotel_name) == 0) { //Log(N)
@@ -63,7 +63,7 @@ public:
 
 	}
 
-	int Customers(string hotel_name) {
+	int Customers(string hotel_name) const {
 		//check that hotel id exist
 		if(hotel_ids_.count(hotel_name) == 0) { return 0; }
 		int hotel_id_key = hotel_ids_.at(hotel_name);
@@ -71,7 +71,7 @@ public:
 		return customers_per_hotels_[hotel_id_key].size();
 	}
 
-	int Rooms(string hotel_name) {
+	int Rooms(string hotel_name) const {
 		//check that hotel id exist
 		if(hotel_ids_.count(hotel_name) == 0) { return 0; }
 		int hotel_id_key = hotel_ids_.at(hotel_name);
