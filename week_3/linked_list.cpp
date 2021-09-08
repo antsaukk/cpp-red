@@ -1,6 +1,7 @@
 #include "test_runner.h"
 
 #include <vector>
+#include <iostream>
 using namespace std;
 
 template <typename T>
@@ -12,24 +13,39 @@ public:
   };
 
   ~LinkedList() {
-
+    while(GetHead()!=nullptr) PopFront();
   }
 
   void PushFront(const T& value) {
     Node* newNode = new Node;
-    auto head = GetHead(); 
-    newNode->value = value; 
-    newNode->next = nullptr;
-    head->next = newNode;
+    newNode->value = value;
+    newNode->next = head;
+    head = newNode;
   }
   void InsertAfter(Node* node, const T& value) {
-
+    if (node == nullptr) PushFront(value); 
+    else {
+      Node* newNode = new Node;//allocate new node
+      newNode->value = value; // assign value field
+      newNode->next = node->next; //set pointer to the next element
+      node->next = newNode; //set pointer of the previous element to the new node
+    } 
   }
   void RemoveAfter(Node* node) {
-
+    if (node == nullptr) PopFront();
+    else if (node->next == nullptr) return; 
+    else { 
+      Node* tempNode = node->next; // if node is nullptr there is nothing to remove
+      node->next = node->next->next; // set pointer to the node after one
+      delete tempNode; //remove the element after node
+    } 
   }
   void PopFront() {
-    
+    if (head != nullptr) {
+       Node* tempNode = head;
+       head = head->next;
+       delete tempNode;
+    }
   }
 
   Node* GetHead() { return head; }
@@ -60,6 +76,16 @@ void TestPushFront() {
 
   const vector<int> expected = {3, 2, 1};
   ASSERT_EQUAL(ToVector(list), expected);
+
+  list.PushFront(4);
+  ASSERT_EQUAL(list.GetHead()->value, 4);
+  list.PushFront(5);
+  ASSERT_EQUAL(list.GetHead()->value, 5);
+  list.PushFront(6);
+  ASSERT_EQUAL(list.GetHead()->value, 6);
+
+  const vector<int> exp = {6, 5, 4, 3, 2, 1};
+  ASSERT_EQUAL(ToVector(list), exp);
 }
 
 void TestInsertAfter() {
@@ -110,6 +136,8 @@ void TestPopFront() {
   for (int i = 1; i <= 5; ++i) {
     list.PopFront();
   }
+  cout << list.GetHead()->value << " ";
+  cout << list.GetHead() << " ";
   ASSERT(list.GetHead() == nullptr);
 }
 
