@@ -13,7 +13,7 @@ public:
   };
 
   ~LinkedList() {
-    while(GetHead()!=nullptr) PopFront();
+    while(GetHead()) PopFront();
   }
 
   void PushFront(const T& value) {
