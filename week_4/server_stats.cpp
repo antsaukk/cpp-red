@@ -1,6 +1,8 @@
 #include "test_runner.h"
 #include "http_request.h"
-#include "stats.h"
+//#include "stats.h"
+
+#include "stats.cpp"
 
 #include <map>
 #include <string_view>
@@ -84,6 +86,8 @@ void TestAbsentParts() {
 
 int main() {
   TestRunner tr;
+  LOG_DURATION("Total tests' duration");
   RUN_TEST(tr, TestBasic);
   RUN_TEST(tr, TestAbsentParts);
+  return 0;
 }
