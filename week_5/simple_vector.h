@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <utility>
 #include <memory>
+#include <algorithm>
 
 template <typename T>
 class SimpleVector {
@@ -21,22 +22,24 @@ public:
 
   SimpleVector(const SimpleVector<T>& other) : //copy constructor
     data(new T[other.capacity_]),
-    capacity_(other.size_),
-    size_(other.capacity_) 
-    {}
+    capacity_(other.capacity_),
+    size_(other.size_) 
+    {
+      std::copy(other.begin(), other.end(), begin());
+    }
 
-  void operator=(const SimpleVector& other) { //copy assignment <- bag here
+  void operator=(const SimpleVector& other) { //copy assignment 
     if (other.size_ <= capacity_) {
-      for(const auto& item : other)
-        PushBack(std::move(item));
+      std::copy(other.begin(), other.end(), begin());
       size_ = other.size_;
     } else {
       SimpleVector<T> temp(other);
-      swap(temp.data, data);
-      swap(temp.size_, size_);
-      swap(temp.capacity_, capacity_);
+      std::swap(temp.data, data);
+      std::swap(temp.size_, size_);
+      std::swap(temp.capacity_, capacity_);
     } 
   }
+
 
   ~SimpleVector() { delete[] data; }
 
