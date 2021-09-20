@@ -25,7 +25,7 @@ public:
     capacity_(other.capacity_),
     size_(other.size_) 
     {
-      std::copy(other.begin(), other.end(), begin());
+      std::copy(other.begin(), other.end(), begin()); //subtitute by own analogy
     }
 
   void operator=(const SimpleVector& other) { //copy assignment 
@@ -34,9 +34,9 @@ public:
       size_ = other.size_;
     } else {
       SimpleVector<T> temp(other);
-      std::swap(temp.data, data);
-      std::swap(temp.size_, size_);
-      std::swap(temp.capacity_, capacity_);
+      std::swap(temp.data, data); //subtitute by own analogy
+      std::swap(temp.size_, size_); //subtitute by own analogy
+      std::swap(temp.capacity_, capacity_); //subtitute by own analogy
     } 
   }
 
