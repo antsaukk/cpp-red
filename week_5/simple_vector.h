@@ -56,8 +56,8 @@ public:
   size_t Capacity() const { return capacity_; }
 
   void PushBack(const T& value) {
-    if (Capacity() == 0) {
-      data = new T[1]; 
+    if (!Capacity()) {
+      data = new T[SINGLE_EXP]; 
       *data = value;
       capacity_++;
       size_++;
@@ -80,6 +80,7 @@ public:
   }
 
 private:
+  static const int SINGLE_EXP = 1;
   static const int DOUBLING_CONST = 2;
 
   T* data; 
