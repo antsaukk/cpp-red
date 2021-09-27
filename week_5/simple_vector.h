@@ -83,7 +83,7 @@ private:
   static const int SINGLE_EXP = 1;
   static const int DOUBLING_CONST = 2;
 
-  T* data; 
+  T* data;
   size_t capacity_;
   size_t size_;
 };
