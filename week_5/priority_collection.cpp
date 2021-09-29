@@ -4,6 +4,7 @@
 #include <iterator>
 #include <memory>
 #include <set>
+#include <map>
 #include <cmath>
 #include <utility>
 #include <vector>
@@ -13,14 +14,42 @@ using namespace std;
 template <typename T>
 class PriorityCollection {
 public:
-  using Id = int;/* identificator type */
+  using Id = size_t;/* identificator type */
+  //using MaxNode = pair<int, Id>;/* identificator type */
+
+  PriorityCollection() : maxVal(make_pair(0u,0)) {} //def constr
+
+
+  void UpdateMax(Id id, int rating) {
+    if (maxVal.second < rating || (maxVal.second == rating && maxVal.first < id)) { 
+      maxVal.first = id; 
+      maxVal.second = rating;
+    } 
+  }
+
+  void ClearMax() {
+    maxVal.first = 0u; 
+    maxVal.second = 0;
+  }
+
+  void NewMax() {
+    ClearMax();
+    for (auto iter = priority.begin(); iter != priority.end(); ++iter) {
+        UpdateMax(iter->first, iter->second); 
+    }
+  }
 
   // Add object with zero priority
   // using move semantics and return id
   Id Add(T object) {
-    Id newId = collection.size();
-    collection.push_back(move(object));
-    priority.insert(({0, newId}));
+    Id newId = collection.size(); //generate id
+
+    collection.push_back(move(object)); //move obect into collection
+    status.push_back(ALIVE); //update status
+    priority.insert((make_pair(newId, 0))); //update map
+
+    UpdateMax(newId, ZEROP);
+
     return newId;
   }
 
@@ -28,9 +57,13 @@ public:
   // с помощью перемещения, записав выданные им идентификаторы
   // в диапазон [ids_begin, ...)
   template <typename ObjInputIt, typename IdOutputIt>
-  void Add(ObjInputIt range_begin, ObjInputIt range_end,
-           IdOutputIt ids_begin) {
+  void Add(ObjInputIt range_begin, ObjInputIt range_end, IdOutputIt ids_begin) {
 
+    for(auto it = range_begin; it != range_end; it++) {
+      Id nId = Add(move(*it));
+      *ids_begin = nId;
+      ids_begin++;
+    }
   }
 
   // Определить, принадлежит ли идентификатор какому-либо
@@ -46,22 +79,38 @@ public:
 
   // Увеличить приоритет объекта на 1
   void Promote(Id id) {
-    collection[id].second++;
+    UpdateMax(id, ++priority.at(id));
   }
 
   // Получить объект с максимальным приоритетом и его приоритет
   pair<const T&, int> GetMax() const {
-
+    //return make_pair(collection[maxVal.first], maxVal.second);
+    return {collection[maxVal.first], maxVal.second};
   }
 
   // Аналогично GetMax, но удаляет элемент из контейнера
-  pair<T, int> PopMax();
+  pair<T, int> PopMax() {
+    pair<Id, int> current_max = make_pair(maxVal.first, maxVal.second);
+
+    priority.erase(current_max.first);
+    status[current_max.first] = DEAD;
+
+    NewMax();
+
+    return make_pair(move(collection[current_max.first]), current_max.second);;
+  }
 
 private:
   // Приватные поля и методы
-  set<pair<int, int>> priority; // first index is priority and second is identificator
+  int ALIVE = 1;
+  int DEAD = 0;
+  int ZEROP = 0;
+
+  map<int, int> priority; // first index is identificator and second is priority
   vector<T> collection; //identificator points to the respective index of element in the array
   vector<int> status; //1 object with index id is alive 0 otherwise
+
+  pair<Id, int> maxVal;  //store identificator and max value to fetch it quickly 
 };
 
 
@@ -100,6 +149,8 @@ void TestNoCopy() {
     ASSERT_EQUAL(item.first, "white");
     ASSERT_EQUAL(item.second, 0);
   }
+
+  cout << white_id << endl;
 }
 
 int main() {
