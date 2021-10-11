@@ -4,72 +4,11 @@
 #include <map>
 #include <string>
 #include <algorithm>
+#include <iterator>
 #include <future>
 #include <functional>
 #include <utility>
 using namespace std;
-
-template <typename Iterator>
-class IteratorRange {
-public:
-  IteratorRange(Iterator begin, Iterator end)
-    : first(begin)
-    , last(end)
-    , size_(distance(first, last))
-  {
-  }
-
-  Iterator begin() const {
-    return first;
-  }
-
-  Iterator end() const {
-    return last;
-  }
-
-  size_t size() const {
-    return size_;
-  }
-
-private:
-  Iterator first, last;
-  size_t size_;
-};
-
-template <typename Iterator>
-class Paginator {
-private:
-  vector<IteratorRange<Iterator>> pages;
-
-public:
-  Paginator(Iterator begin, Iterator end, size_t page_size) {
-    for (size_t left = distance(begin, end); left > 0; ) {
-      size_t current_page_size = min(page_size, left);
-      Iterator current_page_end = next(begin, current_page_size);
-      pages.push_back({begin, current_page_end});
-
-      left -= current_page_size;
-      begin = current_page_end;
-    }
-  }
-
-  auto begin() const {
-    return pages.begin();
-  }
-
-  auto end() const {
-    return pages.end();
-  }
-
-  size_t size() const {
-    return pages.size();
-  }
-};
-
-template <typename C>
-auto Paginate(C& c, size_t page_size) {
-  return Paginator(begin(c), end(c), page_size);
-}
 
 struct Stats {
   map<string, int> word_frequences;
@@ -81,9 +20,9 @@ struct Stats {
   }
 };
 
-Stats ExploreKeyWordsSingleThread(const set<string>& key_words, vector<string>& range) {
+Stats ExploreKeyWordsSingleThread(const set<string>& key_words, vector<string>& words) {
   Stats result;
-  for(const auto& str : range){
+  for(const auto& str : words){
     if (key_words.count(str) != 0) {
       result.word_frequences[str]++;
     }
@@ -100,17 +39,23 @@ Stats ExploreKeyWords(const set<string>& key_words, istream& input) {
   string s; 
   while (input >> s) words.push_back(s);
 
-  /*for (auto w : words) 
-    cout << w << " " << endl;*/ 
-
-  constexpr size_t cores = 6;
+  constexpr size_t cores = 8;
   size_t N = words.size();
   size_t workload = N > cores ? (N / cores) + 1 : N;
 
-  vector<future<Stats>> futures; 
-  auto pages = Paginate(words, workload);
+  vector<vector<string>> spl_words;
 
-  for (vector<string>& range : pages) {
+  for (size_t start = 0; start < N; start += workload) {
+    size_t end = min(N, start + workload);
+    vector<string> temp(end-start);
+    for(size_t i = start; i < end; i++) {
+      temp.push_back(words[i]); 
+    }
+    spl_words.push_back(temp); 
+  }
+
+  vector<future<Stats>> futures; 
+  for (auto& range : spl_words) {
     futures.push_back(async(ExploreKeyWordsSingleThread, ref(key_words), ref(range)));
   }
 
