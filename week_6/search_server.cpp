@@ -26,22 +26,19 @@ void SearchServer::UpdateDocumentBase(istream& document_input) {
 }
 
 void SearchServer::AddQueriesStream(istream& query_input, ostream& search_results_output) {
+  vector<pair<size_t, size_t>> docid_count(50'000);
+
   for (string current_query; getline(query_input, current_query); ) { //can iterate over 500 000
     const auto words = SplitIntoWords(current_query); // 1 <= sizeof(words) <= 10
 
-    //map<size_t, size_t> docid_count;
-    vector<pair<size_t, size_t>> docid_count(50'000);
     for (const auto& word : words) { // O(size of the query) <= 10
       auto indx_lookup = index.Lookup(word); //O(Log(index size))
       for (const size_t docid : indx_lookup) { //O(size of list inside map index) <= 50 000
-        //docid_count[docid]++; //O(Log(docid count size))
-        docid_count[docid] = make_pair(docid, ++docid_count[docid].second);
+        docid_count[docid] = {docid, ++docid_count[docid].second};
       }
     }
 
-    //vector<pair<size_t, size_t>> search_results(docid_count.begin(), docid_count.end());
-
-    sort(begin(docid_count), end(docid_count),
+    partial_sort(begin(docid_count), begin(docid_count)+5, end(docid_count),
       [](pair<size_t, size_t> lhs, pair<size_t, size_t> rhs) {
         int64_t lhs_docid = lhs.first;
         auto lhs_hit_count = lhs.second;
@@ -61,13 +58,16 @@ void SearchServer::AddQueriesStream(istream& query_input, ostream& search_result
         << "hitcount: " << hitcount << '}';
     }
     search_results_output << endl;
+
+    for(size_t i = 0; i < 50'000; i++)
+      docid_count[i] = {0,0};
   }
 }
 
 /*Inverted index functions*/
 
 void InvertedIndex::Add(const string& document) {
-  docs.push_back(document);
+  docs.push_back(move(document));
 
   const size_t docid = docs.size() - 1;
   auto doc_split = SplitIntoWords(document);
@@ -76,7 +76,7 @@ void InvertedIndex::Add(const string& document) {
   }
 }
 
-list<size_t> InvertedIndex::Lookup(const string& word) const {
+vector<size_t> InvertedIndex::Lookup(const string& word) const {
   if (auto it = index.find(word); it != index.end()) {
     return it->second;
   } else {
