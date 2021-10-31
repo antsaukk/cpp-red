@@ -34,14 +34,19 @@ class InvertedIndex {
 public:
 
   void Add(const string& document);
-  vector<DocWordStat> Lookup(const string& word) const;
+  //void Add(string_view document);
+
+  const vector<DocWordStat>& Lookup(const string& word) const;
+  //const vector<DocWordStat>& Lookup(string_view word) const;
 
   size_t Index() {
     return docs > 0 ? docs-1 : docs; 
   }
 
 private:
+  //map<string_view, vector<DocWordStat>> index;
   map<string, vector<DocWordStat>> index;
+  //vector<DocWordStat> empty_;
   size_t docs=0;
 };
 

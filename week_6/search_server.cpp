@@ -7,9 +7,23 @@
 #include <iostream>
 
 vector<string> SplitIntoWords(const string& line) {
-  istringstream words_input(move(line)); //remove move?
+  istringstream words_input(move(line)); 
   return {istream_iterator<string>(words_input), istream_iterator<string>()};
 }
+
+/*vector<string_view> SplitIntoWords(string_view line) {
+    vector<string_view> result;
+    size_t curr = line.find_first_not_of(' ', 0);
+    while (true){
+        auto space = line.find(' ', curr);
+        result.emplace_back(line.substr(curr, space - curr));
+
+        if (space == line.npos) break;
+        else curr = line.find_first_not_of(' ', space);
+        if (curr == line.npos) break;
+    }
+    return result;
+}*/
 
 SearchServer::SearchServer(istream& document_input) {
   UpdateDocumentBase(document_input);
@@ -30,6 +44,7 @@ void SearchServer::AddQueriesStream(istream& query_input, ostream& search_result
 
   for (string current_query; getline(query_input, current_query); ) {
     const auto words = SplitIntoWords(move(current_query));
+    //const auto words = SplitIntoWords(current_query);
 
     for (const auto& word : words) {
       auto indx_lookup = index.Lookup(word); 
@@ -80,13 +95,37 @@ void InvertedIndex::Add(const string& document) {
       temp.back().increase_hitcount();
     }
   }
-
 }
 
-vector<DocWordStat> InvertedIndex::Lookup(const string& word) const { //do not return vector
+/*void InvertedIndex::Add(const string& document) {
+  docs++;
+
+  const size_t docid = Index();
+  //auto doc_split = SplitIntoWords(document);
+  for (const auto& word : SplitIntoWords(document)) {
+    auto& temp = index[word];
+    if (temp.empty() || temp.back().get_docid() != docid) {
+      temp.push_back({docid, 1u});
+    } else {
+      temp.back().increase_hitcount();
+    }
+  }
+}*/
+
+const vector<DocWordStat>& InvertedIndex::Lookup(const string& word) const { 
   if (auto it = index.find(word); it != index.end()) {
     return it->second;
   } else {
-    return {};
+    static const vector<DocWordStat> empty_;
+    return empty_;
   }
 }
+
+/*const vector<DocWordStat>& InvertedIndex::Lookup(string_view word) const { 
+  if (auto it = index.find(word); it != index.end()) {
+    return it->second;
+  } else {
+    static const vector<DocWordStat> empty_;
+    return empty_;
+  }
+}*/

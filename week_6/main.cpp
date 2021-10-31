@@ -1,9 +1,9 @@
-/*#include "search_server.h"
-#include "parse.h"*/
+#include "search_server.h"
+#include "parse.h"
 #include "test_runner.h"
 
-#include "search_server.cpp"
-#include "parse.cpp"
+/*#include "search_server.cpp"
+#include "parse.cpp"*/
 
 #include <algorithm>
 #include <iterator>
