@@ -44,7 +44,6 @@ void SearchServer::AddQueriesStream(istream& query_input, ostream& search_result
 
   for (string current_query; getline(query_input, current_query); ) {
     const auto words = SplitIntoWords(move(current_query));
-    //const auto words = SplitIntoWords(current_query);
 
     for (const auto& word : words) {
       auto indx_lookup = index.Lookup(word); 
@@ -97,21 +96,6 @@ void InvertedIndex::Add(const string& document) {
   }
 }
 
-/*void InvertedIndex::Add(const string& document) {
-  docs++;
-
-  const size_t docid = Index();
-  //auto doc_split = SplitIntoWords(document);
-  for (const auto& word : SplitIntoWords(document)) {
-    auto& temp = index[word];
-    if (temp.empty() || temp.back().get_docid() != docid) {
-      temp.push_back({docid, 1u});
-    } else {
-      temp.back().increase_hitcount();
-    }
-  }
-}*/
-
 const vector<DocWordStat>& InvertedIndex::Lookup(const string& word) const { 
   if (auto it = index.find(word); it != index.end()) {
     return it->second;
@@ -120,12 +104,3 @@ const vector<DocWordStat>& InvertedIndex::Lookup(const string& word) const {
     return empty_;
   }
 }
-
-/*const vector<DocWordStat>& InvertedIndex::Lookup(string_view word) const { 
-  if (auto it = index.find(word); it != index.end()) {
-    return it->second;
-  } else {
-    static const vector<DocWordStat> empty_;
-    return empty_;
-  }
-}*/
